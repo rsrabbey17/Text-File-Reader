@@ -5,16 +5,22 @@ import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import org.example.Operation;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class FileOperations {
-    private Gson gson;
+public class FileOperations { // Class name is FileOperations
+    private final Gson gson;
+
+    // Regex: Captures (Number) (Operator) (Number), handling optional sign, spaces, and decimals.
+    private static final String OPERATION_REGEX =
+            "([+\\-]?\\s*\\d*\\.?\\d+)\\s*([+\\-*/])\\s*([+\\-]?\\s*\\d*\\.?\\d+)";
+    private static final Pattern OPERATION_PATTERN = Pattern.compile(OPERATION_REGEX);
 
     public FileOperations() {
-        this.gson = new GsonBuilder().setPrettyPrinting().create();
+        this.gson = new GsonBuilder().setPrettyPrinting().create(); // Saves content as JSON
     }
 
-    // Read operations from input file
+    // Read operations from input file (Step 1: Read a text file line by line)
     public List<Operation> readOperationsFromFile(String filename) {
         List<Operation> operations = new ArrayList<>();
 
@@ -25,11 +31,12 @@ public class FileOperations {
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
                 try {
-                    Operation operation = parseOperationLine(line.trim());
+                    Operation operation = parseOperationLine(line.trim()); // Convert them into objects
                     if (operation != null) {
                         operations.add(operation);
                     }
                 } catch (Exception e) {
+                    // Program should not crash, handle all exceptions
                     System.err.println("Error parsing line " + lineNumber + ": " + line);
                     System.err.println("Error message: " + e.getMessage());
                 }
@@ -43,73 +50,43 @@ public class FileOperations {
         return operations;
     }
 
-    // Parse a single line into an Operation object
+    // Parse a single line into an Operation object (Corrected Logic)
     private Operation parseOperationLine(String line) {
         if (line == null || line.trim().isEmpty()) {
             return null;
         }
 
+        Matcher matcher = OPERATION_PATTERN.matcher(line);
+
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid format: Line must be <num> <op> <num>.");
+        }
+
         try {
-            // Split by spaces, but be careful with negative numbers
-            String[] parts = line.split("\\s+");
+            // Group 1: numOne, Group 2: operator, Group 3: numTwo
+            double numOne = Double.parseDouble(matcher.group(1).trim());
+            String operator = matcher.group(2).trim();
+            double numTwo = Double.parseDouble(matcher.group(3).trim());
 
-            if (parts.length < 3) {
-                throw new IllegalArgumentException("Invalid format: expected <number> <operator> <number>");
-            }
-
-            // Handle potential negative numbers
-            int operatorIndex = -1;
-            String operator = null;
-
-            // Find the operator
-            for (int i = 0; i < parts.length; i++) {
-                if (parts[i].matches("[+\\-*/]")) {
-                    operatorIndex = i;
-                    operator = parts[i];
-                    break;
-                }
-            }
-
-            if (operatorIndex == -1) {
-                throw new IllegalArgumentException("No valid operator found");
-            }
-
-            // Reconstruct numOne from parts before operator
-            StringBuilder numOneBuilder = new StringBuilder();
-            for (int i = 0; i < operatorIndex; i++) {
-                numOneBuilder.append(parts[i]);
-            }
-            double numOne = Double.parseDouble(numOneBuilder.toString());
-
-            // Reconstruct numTwo from parts after operator
-            StringBuilder numTwoBuilder = new StringBuilder();
-            for (int i = operatorIndex + 1; i < parts.length; i++) {
-                numTwoBuilder.append(parts[i]);
-            }
-            double numTwo = Double.parseDouble(numTwoBuilder.toString());
-
-            // Calculate result
+            // Perform the operation
             double result = calculateResult(numOne, numTwo, operator);
 
             return new Operation(numOne, numTwo, operator, result);
 
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to parse line: " + line + " - " + e.getMessage());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid number format.");
         }
     }
 
     // Calculate the result of the operation
     private double calculateResult(double numOne, double numTwo, String operator) {
         switch (operator) {
-            case "+":
-                return numOne + numTwo;
-            case "-":
-                return numOne - numTwo;
-            case "*":
-                return numOne * numTwo;
+            case "+": return numOne + numTwo;
+            case "-": return numOne - numTwo;
+            case "*": return numOne * numTwo;
             case "/":
                 if (numTwo == 0) {
-                    throw new ArithmeticException("Division by zero");
+                    throw new ArithmeticException("Division by zero"); // Handle exceptions
                 }
                 return numOne / numTwo;
             default:
@@ -117,8 +94,9 @@ public class FileOperations {
         }
     }
 
-    // Save operations to JSON file
+    // Save operations to JSON file (Step 3: Save objects to a new file)
     public void saveOperationsToFile(List<Operation> operations, String filename) {
+        // Use a separate class for file related operations
         if (operations == null || operations.isEmpty()) {
             System.out.println("No operations to save.");
             return;
@@ -132,7 +110,7 @@ public class FileOperations {
         }
     }
 
-    // Read operations from JSON file
+    // Read operations from JSON file (Step 4: Read the new file & convert back to objects)
     public List<Operation> readOperationsFromJsonFile(String filename) {
         try (FileReader reader = new FileReader(filename)) {
             java.lang.reflect.Type operationListType = new TypeToken<List<Operation>>(){}.getType();
@@ -147,7 +125,7 @@ public class FileOperations {
         return new ArrayList<>();
     }
 
-    // Display operations in terminal
+    // Display operations in terminal (Step 5: Show the objects as the output)
     public void displayOperations(List<Operation> operations) {
         if (operations == null || operations.isEmpty()) {
             System.out.println("No operations to display.");
