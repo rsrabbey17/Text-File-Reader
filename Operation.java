@@ -1,4 +1,5 @@
 package org.example;
+
 public class Operation {
     private double numOne;
     private double numTwo;
@@ -16,38 +17,28 @@ public class Operation {
         this.result = result;
     }
 
-    // Getters and setters
-    public double getNumOne() { 
-        return numOne; 
-    }
-    public void setNumOne(double numOne) { 
-        this.numOne = numOne; 
+    // Getters for JSON serialization
+
+
+    public double getNumOne() {
+        return numOne;
     }
 
-    public double getNumTwo() { 
-        return numTwo; 
-    }
-    public void setNumTwo(double numTwo) { 
-        this.numTwo = numTwo; 
+    public double getNumTwo() {
+        return numTwo;
     }
 
-    public String getOperator() { 
-        return operator; 
-    }
-    public void setOperator(String operator) { 
-        this.operator = operator; 
+    public String getOperator() {
+        return operator;
     }
 
-    public double getResult() { 
-        return result; 
-    }
-    public void setResult(double result) { 
-        this.result = result; 
+    public double getResult() {
+        return result;
     }
 
     @Override
     public String toString() {
+        // Output format required: 1.0 + 2.0 = 3.0
         return String.format("%.1f %s %.1f = %.1f", numOne, operator, numTwo, result);
     }
-
 }
