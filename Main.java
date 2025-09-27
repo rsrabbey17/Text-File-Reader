@@ -2,7 +2,7 @@ package org.example;
 
 import java.util.List;
 
-public class Main {
+public class Main { // Class name is Main
     public static void main(String[] args) {
         // File paths
         String inputFile = "operations.txt";
@@ -14,7 +14,7 @@ public class Main {
         try {
             System.out.println("Reading operations from: " + inputFile);
 
-            // Step 1: Read operations from input file
+            // Step 1: Read and process operations
             List<Operation> operations = fileOps.readOperationsFromFile(inputFile);
 
             if (operations.isEmpty()) {
